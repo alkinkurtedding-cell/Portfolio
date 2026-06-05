@@ -1,0 +1,238 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GameStation</title>
+  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Minimal Steam-like game store demo" />
+</head>
+<body>
+  <!-- Steam-style main menu -->
+  <header class="site-header steam-header" aria-label="Main navigation">
+    <div class="steam-left">
+      <div class="brand">
+        <span class="steam-logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+            <path d="M14 35a9 9 0 1 1 0-18 9 9 0 0 1 0 18zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm22 12a9 9 0 1 1 0-18 9 9 0 0 1 0 18zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm5.5-7.5l10.6-5.7a2 2 0 0 0 .9-2.7l-1.5-2.7a2 2 0 0 0-2.7-.9L38 25.7a9 9 0 0 0-4.1-1.2 9 9 0 0 0-8.9 6.3l-7.7-1.9a2 2 0 0 0-2.3 1.5L13 30a2 2 0 0 0 1.5 2.3l7.7 1.9a9 9 0 0 0 8.9 6.3 9 9 0 0 0 4.1-1.2l6.4 3.4a2 2 0 0 0 2.7-.9l1.5-2.7a2 2 0 0 0-.9-2.7L41.5 35.5z"/>
+          </svg>
+        </span>
+        GameStation
+      </div>
+      <button id="menuToggle" class="menu-toggle" aria-label="Open menu">☰</button>
+      <nav class="steam-nav" role="navigation" aria-label="Main menu">
+        <a class="nav-item active" href="#">Store</a>
+        <a class="nav-item" href="#">Library</a>
+        <a class="nav-item" href="#">Community</a>
+        <a class="nav-item" href="#">About</a>
+      </nav>
+    </div>
+    <div class="steam-center">
+      <div class="search"><input id="search" placeholder="Search the store..." autocomplete="off" /></div>
+    </div>
+    <div class="steam-right">
+      <div class="steam-actions">
+        <button id="cartBtn" class="icon-btn">Cart (<span id="cartCount">0</span>)</button>
+        <div class="account">
+          <button id="profileBtn" class="profile-btn">Guest ▾</button>
+          <div id="accountMenu" class="account-menu hidden">
+            <a href="#" id="loginBtn">Log in</a>
+            <a href="#" id="signupBtn">Sign up</a>
+            <a href="#" id="profileLink" class="hidden">Profile</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="steam-bottom">
+      <select id="genreSelect"></select>
+      <select id="sortSelect">
+        <option value="popular">Most popular</option>
+        <option value="new">New</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <section id="grid" class="grid" aria-live="polite"></section>
+  </main>
+
+  <aside id="cart" class="cart hidden" aria-hidden="true">
+    <header class="cart-header">
+      <h3>Your Cart</h3>
+      <button id="closeCart">Close</button>
+    </header>
+    <div id="cartItems" class="cart-items"></div>
+    <footer class="cart-footer">
+      <div>Total: $<span id="cartTotal">0.00</span></div>
+      <button id="checkout">Checkout</button>
+    </footer>
+  </aside>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Auth & Profile modals -->
+  <div id="loginModal" class="modal hidden">
+    <div class="modal-inner">
+      <h3>Log in</h3>
+      <input id="loginEmail" placeholder="Email" />
+      <input id="loginPassword" placeholder="Password" type="password" />
+      <div class="modal-actions">
+        <button id="loginSubmit">Log in</button>
+        <button id="loginClose">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="signupModal" class="modal hidden">
+    <div class="modal-inner">
+      <h3>Sign up</h3>
+      <input id="signupName" placeholder="Username" />
+      <input id="signupEmail" placeholder="Email" />
+      <input id="signupPassword" placeholder="Password" type="password" />
+      <div class="modal-actions">
+        <button id="signupSubmit">Create account</button>
+        <button id="signupClose">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="profileModal" class="modal hidden">
+    <div class="modal-inner">
+      <h3>Your Profile</h3>
+      <div id="profileInfo"></div>
+      <div class="modal-actions">
+        <button id="logoutBtn">Log out</button>
+        <button id="profileClose">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game detail modal -->
+  <div id="gameModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-inner game-modal">
+      <button id="gameClose" class="close">Close</button>
+      <div class="game-detail">
+        <div class="game-left">
+          <img id="gameCover" src="" alt="" style="width:100%;height:auto;object-fit:cover;border-radius:8px;" />
+        </div>
+        <div class="game-right">
+          <h2 id="gameTitle"></h2>
+          <div id="gameMeta" class="meta"></div>
+          <p id="gameDesc"></p>
+          <div id="gameTrailer" class="trailer"></div>
+          <button id="buyBtn" class="btn"></button>
+          <section id="reviews">
+            <h3>Reviews</h3>
+            <div id="reviewList"></div>
+            <h4>Add review</h4>
+            <input id="reviewName" placeholder="Your name" />
+            <select id="reviewRating">
+              <option>5</option>
+              <option>4</option>
+              <option>3</option>
+              <option>2</option>
+              <option>1</option>
+            </select>
+            <textarea id="reviewComment" placeholder="Your review" style="width:100%;min-height:60px;margin-top:8px;padding:8px;border-radius:6px;border:1px solid rgba(0,0,0,0.06);"></textarea>
+            <div class="modal-actions"><button id="submitReview" class="btn">Submit</button></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+  (function(){
+    function showGameModal(game){
+      const modal = document.getElementById('gameModal');
+      document.getElementById('gameTitle').textContent = game.title;
+      const cover = document.getElementById('gameCover');
+      cover.src = game.cover;
+      cover.alt = game.title + ' cover';
+      document.getElementById('gameDesc').textContent = game.description;
+      document.getElementById('gameMeta').innerHTML = `<div>${game.developer}</div><div>${(game.rating||0).toFixed(1)} â˜…</div><div class="price">${game.price===0?'Free':'$'+game.price.toFixed(2)}</div>`;
+      const trailerEl = document.getElementById('gameTrailer');
+      if(game.trailer){
+        const watchUrl = `https://www.youtube.com/watch?v=${game.trailer}`;
+        trailerEl.innerHTML = `
+          <div class="video-frame">
+            <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${game.trailer}?rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="${game.title} trailer"></iframe>
+          </div>
+          <div class="trailer-links">
+            <a href="${watchUrl}" target="_blank" rel="noopener">Watch on YouTube</a>
+            <a href="${watchUrl}" target="_blank" rel="noopener">Open trailer</a>
+          </div>
+        `;
+      } else {
+        const ytLink = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(game.title + ' trailer');
+        trailerEl.innerHTML = `<a href="${ytLink}" target="_blank" rel="noopener">Watch trailer on YouTube</a>`;
+      }
+      const buyBtn = document.getElementById('buyBtn');
+      buyBtn.textContent = game.price===0 ? 'Download' : 'Buy '+ (game.price===0? 'Free' : '$'+game.price.toFixed(2));
+      buyBtn.onclick = function(){ if(game.price===0){ toastMsg('Download started (simulated)'); } else { toastMsg('Purchase simulated â€” thanks!'); } };
+      loadReviews(game.id);
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden','false');
+    }
+    function closeGameModal(){ const modal=document.getElementById('gameModal'); modal.classList.add('hidden'); modal.setAttribute('aria-hidden','true'); }
+    function loadReviews(id){
+      const list = document.getElementById('reviewList');
+      list.innerHTML='';
+      const reviews = JSON.parse(localStorage.getItem('reviews_'+id) || '[]');
+      if(reviews.length===0) list.innerHTML = '<div class="cart-empty">No reviews yet.</div>';
+      reviews.forEach(function(r){
+        const d = document.createElement('div');
+        d.className='review';
+        d.innerHTML = `<strong>${r.name}</strong> <span class="muted"> - ${r.rating} â˜…</span><div>${r.comment}</div>`;
+        list.appendChild(d);
+      });
+      document.getElementById('submitReview').onclick = function(){
+        const name = document.getElementById('reviewName').value.trim() || 'Anonymous';
+        const rating = parseInt(document.getElementById('reviewRating').value) || 5;
+        const comment = document.getElementById('reviewComment').value.trim();
+        if(!comment){ toastMsg('Please enter a comment'); return; }
+        const r = {name: name, rating: rating, comment: comment, created: Date.now()};
+        reviews.push(r);
+        localStorage.setItem('reviews_'+id, JSON.stringify(reviews));
+        document.getElementById('reviewName').value=''; document.getElementById('reviewRating').value='5'; document.getElementById('reviewComment').value='';
+        loadReviews(id);
+        toastMsg('Review added');
+      };
+    }
+
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.id==='gameClose') { closeGameModal(); return; }
+      const card = e.target.closest && e.target.closest('.card');
+      if(!card) return;
+      if(e.target.closest && e.target.closest('button')) return;
+      const titleEl = card.querySelector && card.querySelector('.title');
+      if(!titleEl) return;
+      const gameId = card.dataset.id;
+      const gameSource = (window.games || games || []);
+      const game = gameSource.find(function(g){ return String(g.id)===gameId; });
+      if(game) showGameModal(game);
+    });
+  })();
+  </script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    const profileBtn = document.getElementById('profileBtn');
+    const accountMenu = document.getElementById('accountMenu');
+    const menuToggle = document.getElementById('menuToggle');
+    const header = document.querySelector('.steam-header');
+    if(profileBtn && accountMenu){
+      profileBtn.addEventListener('click', function(e){ e.preventDefault(); accountMenu.classList.toggle('hidden'); });
+      document.addEventListener('click', function(e){ if(!e.target.closest || !e.target.closest('.account')) accountMenu.classList.add('hidden'); });
+    }
+    if(menuToggle && header){
+      menuToggle.addEventListener('click', function(e){ e.stopPropagation(); header.classList.toggle('nav-open'); });
+      document.addEventListener('click', function(e){ if(!e.target.closest || !e.target.closest('.steam-header')) header.classList.remove('nav-open'); });
+    }
+  });
+  </script>
+</body>
+</html>
+
